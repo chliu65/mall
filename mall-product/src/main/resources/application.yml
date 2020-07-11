@@ -1,0 +1,34 @@
+
+server:
+  port: 9009
+eureka:
+  client:
+    service-url:
+      defaultZone: http://120.77.241.51:8762/eureka
+  instance:
+    prefer-ip-address: true
+    ip-address: 49.123.79.89
+    instance-id: ${spring.cloud.client.ip-address}:${spring.application.name}:${server.port}
+spring:
+  application:
+    name: mall-product
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://49.123.79.89:3306/mall?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: 123456
+  redis:
+    host: 120.77.241.51
+    password: 123456
+    timeout: 10000ms
+    jedis:
+      pool:
+        max-active: 32 #jedis最大连接数，超过此值则提示获取不到连接异常
+        max-wait: 10000ms #jedis最大等待时间，超过此值会提示连接超时异常
+        max-idle: 32 #jedis最大等待连接数
+        min-idle: 0 #jedis最小等待连接数
+  jpa:
+    show-sql: true
+mybatis:
+  mapper-locations: classpath:com/lc/mallproduct/dao/*.xml
+  type-aliases-package: classpath:com.lc.mallproduct.entity
