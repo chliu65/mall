@@ -1,6 +1,7 @@
 package com.lc.malluser.controller;
 
 
+import com.lc.malluser.client.UniqueIdClient;
 import com.lc.malluser.common.resp.ResponseEnum;
 import com.lc.malluser.service.IUserService;
 import com.lc.malluser.common.constants.Constants;
@@ -16,20 +17,20 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import springfox.documentation.spring.web.json.Json;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-
-//TODO 先全部开放GET请求
 @RequestMapping("user")
 @RestController
 @Slf4j
@@ -40,12 +41,19 @@ public class UserController {
     @Autowired
     private IUserService userService;
     @Autowired
+    private UniqueIdClient uniqueIdClient;
+    @Autowired
 //    private CommonCacheUtil commonCacheUtil;
     private StringRedisTemplate stringRedisTemplate;
 
     /**
-     * 用户登陆：验证参数、登陆、写到cookie中并且写到redis中
-     * 用户登陆以后，点击其他需要登陆才能看的页面时，先判断是否前端是否有这个key，没有则提示需要登陆
+     * 用户登录
+     * redis+cookie实现分布式session
+     * @param request
+     * @param response
+     * @param username
+     * @param password
+     * @return
      */
     @ApiOperation(value="用户登陆", notes="输入用户名，密码，不能为空")
     @ApiImplicitParams({
@@ -57,32 +65,38 @@ public class UserController {
                                            @RequestParam (value = "username") String username,
                                            @RequestParam (value = "password") String password){
         log.info("【用户{}开始登陆】",username);
-
+        //1.读redis
         String token=CookieUtil.readLoginToken(request);
-        if (!StringUtils.isEmpty(token)){
+        if(null!=token){
             String userKey=new UserKey(token).getPrefix();
             String userString=stringRedisTemplate.opsForValue().get(userKey);
-            User user=JsonUtil.Str2Obj(userString,User.class );
-            if (user.getPassword().equals(MD5Util.MD5EncodeUtf8(password))){
-                return ServerResponse.createBySuccess();
+            if (!userString.isEmpty()){
+                User user=JsonUtil.Str2Obj(userString,User.class );
+                return user.getPassword().equals(MD5Util.MD5EncodeUtf8(password))?
+                        ServerResponse.createBySuccess():ServerResponse.createByError(ResponseEnum.PASSWORD_WRONG);
             }
-        }else {
-
         }
-        ServerResponse userVOServerResponse = userService.login(username,password);
-        if(userVOServerResponse.isSuccess()){
-            //登陆成功，那么需要在redis中存储，并且将代表用户的sessionId写到前端浏览器的cookie中
-            log.info("【用户{}cookie开始写入】",username);
-            //需要唯一id
-            String uniqueId= UUID.randomUUID().toString();
-            CookieUtil.writeLoginToken(response,uniqueId);
-            //写到redis中，将用户信息序列化，设置过期时间为30分钟
-            log.info("【用户{}redis开始写入】",username);
-            String userKey=new UserKey(uniqueId).getPrefix();
-            stringRedisTemplate.opsForValue().set(userKey,JsonUtil.obj2String(userVOServerResponse.getData()) , Constants.RedisCacheExtime.REDIS_SESSION_EXTIME, TimeUnit.SECONDS);
+        //2.读数据库
+        ServerResponse serverResponse=userService.login(username, password);
+        if(!serverResponse.isSuccess()){
+            return serverResponse;
         }
-        log.info("【用户{}登陆成功】",username);
-        return userVOServerResponse;
+        User user=(User) serverResponse.getData();
+        //登陆成功，那么需要在redis中存储，并且将代表用户的sessionId写到前端浏览器的cookie中
+        log.info("【用户{}cookie开始写入】",username);
+        //需要唯一id
+        String uniqueId=uniqueIdClient.getUniqueId();
+        CookieUtil.writeLoginToken(response,uniqueId);
+        //写到redis中，将用户信息序列化，设置过期时间为30分钟
+        log.info("【用户{}redis开始写入】",username);
+        String userKey=new UserKey(uniqueId).getPrefix();
+        stringRedisTemplate.opsForValue().set(userKey,
+                JsonUtil.obj2String(serverResponse.getData()) ,
+                Constants.RedisCacheExtime.REDIS_SESSION_EXTIME,
+                TimeUnit.SECONDS);
+        UserResVO userResVO= new UserResVO();
+        BeanUtils.copyProperties(user, userResVO);
+        return ServerResponse.createBySuccess(userResVO);
     }
 
 
@@ -131,7 +145,7 @@ public class UserController {
             return ServerResponse.createByError(ResponseEnum.LOGIN_EXPIRED);
         }
         String userStr = stringRedisTemplate.opsForValue().get(new UserKey(loginToken).getPrefix());
-        if(userStr == null){
+        if(userStr.isEmpty()){
             log.info("【用户未登录,无法获取当前用户信息】");
             return ServerResponse.createByError(ResponseEnum.LOGIN_EXPIRED);
         }

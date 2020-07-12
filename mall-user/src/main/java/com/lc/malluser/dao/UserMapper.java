@@ -4,8 +4,11 @@ package com.lc.malluser.dao;
 import com.lc.malluser.entity.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
+import org.springframework.stereotype.Repository;
 
 @Mapper
+//@Repository
 public interface UserMapper {
     int deleteByPrimaryKey(Integer id);
 
@@ -20,8 +23,8 @@ public interface UserMapper {
     int updateByPrimaryKey(User record);
 
 //    User selectByUsername(String username);
-
-    User selectByUsername(@Param("username") String username);
+//    @Select("select * from mmall_user where username=#{username}")
+    User selectUserByUsername(@Param("username") String username);
 
     User selectByEmail(String str);//数据库能不能优化
 

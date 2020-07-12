@@ -24,7 +24,7 @@ public class CookieUtil {
      */
     public static void writeLoginToken(HttpServletResponse response,String token){
         Cookie ck = new Cookie(COOKIE_NAME,token);
-        ck.setDomain(COOKIE_DOMAIN);
+        //ck.setDomain(COOKIE_DOMAIN);
         ck.setPath("/");//设值在根目录
         ck.setHttpOnly(true);//不允许通过脚本访问cookie,避免脚本攻击
         ck.setMaxAge(60*60*24*365);//一年，-1表示永久,单位是秒，maxage不设置的话，cookie就不会写入硬盘，只会写在内存，只在当前页面有效
@@ -61,8 +61,8 @@ public class CookieUtil {
         if(cks != null){
             for(Cookie ck:cks) {
                 if(StringUtils.equals(ck.getName(),COOKIE_NAME)){
-                    ck.setDomain(COOKIE_DOMAIN);
-                    ck.setPath("/");
+//                    ck.setDomain(COOKIE_DOMAIN);
+//                    ck.setPath("/");
                     ck.setMaxAge(0);//0表示消除此cookie
                     log.info("del cookieName:{},cookieBValue:{}",ck.getName(),ck.getValue());
                     response.addCookie(ck);

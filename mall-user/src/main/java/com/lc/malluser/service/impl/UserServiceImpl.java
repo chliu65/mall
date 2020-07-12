@@ -45,19 +45,17 @@ public class UserServiceImpl implements IUserService {
             throw new GlobalException(ResponseEnum.ILLEGAL_ARGUMENTS);
         }
         //2.根据用户名去取用户信息（本系统用户名不能重复）
-        User user = userMapper.getUserByUsername(username);
+        User user = userMapper.selectUserByUsername(username);
         if(null==user){
             throw new GlobalException(ResponseEnum.USER_NOT_EXIST);
         }
-        //3.走到这一步，说明存在该用户，下面就执行登陆校验
+        //3.密码校验
         String md5Passwd = MD5Util.MD5EncodeUtf8(password);
         if (!user.getPassword().equals(md5Passwd)){
             throw new GlobalException(ResponseEnum.PASSWORD_WRONG);
         }
-        //4.走到这一步，说明用户名密码正确，应该返回成功
-        UserResVO userResVO=new UserResVO();
-        BeanUtils.copyProperties(user, userResVO);
-        return ServerResponse.createBySuccess(userResVO);
+        //4.登陆成功
+        return ServerResponse.createBySuccess(user);
     }
 
 
@@ -126,7 +124,7 @@ public class UserServiceImpl implements IUserService {
         }
         if(Constants.USERNAME.equalsIgnoreCase(type)){
             //如果是username类型，那么就根据str为username去数据库查询
-            User user= userMapper.selectByUsername(str);
+            User user= userMapper.selectUserByUsername(str);
             if(null!=user){
                 //说明数据库已经存在这个username的用户了，返回用户已存在
                 return ServerResponse.createByError(ResponseEnum.USERNAME_EXISTED);
@@ -149,7 +147,7 @@ public class UserServiceImpl implements IUserService {
             return ServerResponse.createByError(ResponseEnum.ILLEGAL_ARGUMENTS);
         }
         //2.根据username去获取题目
-        User user = userMapper.getUserByUsername(username);
+        User user = userMapper.selectUserByUsername(username);
         if(user == null){
             return ServerResponse.createByError(ResponseEnum.USER_NOT_EXIST);
         }
@@ -169,7 +167,7 @@ public class UserServiceImpl implements IUserService {
         }
         //此处可优化从redis中拿（当获取问题的时候放入redis中）
         //2.参数没有问题之后，就可以去校验答案是否正确了
-        User user = userMapper.getUserByUsername(username);
+        User user = userMapper.selectUserByUsername(username);
         if (null==user){
             return ServerResponse.createByError(ResponseEnum.ILLEGAL_ARGUMENTS);
         }
@@ -195,7 +193,7 @@ public class UserServiceImpl implements IUserService {
             return ServerResponse.createByError(ResponseEnum.ILLEGAL_ARGUMENTS);
         }
         //2.根据username去获取用户
-        User user = userMapper.getUserByUsername(username);
+        User user = userMapper.selectUserByUsername(username);
         if(user == null){
             return ServerResponse.createByError(ResponseEnum.USER_NOT_EXIST);
         }
