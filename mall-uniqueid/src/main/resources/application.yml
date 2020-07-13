@@ -1,0 +1,13 @@
+server:
+  port: 9208
+eureka:
+  client:
+    service-url:
+      defaultZone: http://120.77.241.51:8762/eureka
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.cloud.client.ip-address}:${spring.application.name}:${server.port}
+    ip-address: 49.123.79.89
+spring:
+  application:
+    name: mall-uniqueid
