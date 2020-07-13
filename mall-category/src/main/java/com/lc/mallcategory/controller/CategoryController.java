@@ -11,10 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 
-//TODO 这里首先实现业务  关于这里重复的鉴权，后面将会移植到网关中统一去做
-//TODO 先开放GET请求
 @RestController
-@RequestMapping("/manage/category/")
+@RequestMapping("/category/")
 public class CategoryController {
     @Autowired
     private ICategoryService categoryService;

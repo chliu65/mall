@@ -27,8 +27,8 @@ public class Constants {
         int REDIS_SESSION_EXTIME = 60 * 60 * 10;
         int REDIS_FORGETTEN_PASSWORD_USER=60 *  60;
         int PRODUCT_KEY_EXPIRES=24*60*60;
-        int USER_KEY_EXPIRES = 3600*24*2;
-        int PRODUCT_STOCK_KEY_EXPIRES = -1;
+        int USER_KEY_EXPIRES = 2*24*60*60;
+        int PRODUCT_STOCK_KEY_EXPIRES = 24*60*60;
     }
 
     /** 用户注册判断重复的参数类型 start **/

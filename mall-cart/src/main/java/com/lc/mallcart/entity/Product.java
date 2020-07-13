@@ -1,38 +1,40 @@
-package com.lc.mallorder.entity;
+package com.lc.mallcart.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class Shipping {
+@NoArgsConstructor
+public class Product {
     private Integer id;
 
-    private Integer userId;
+    private Integer categoryId;
 
-    private String receiverName;
+    private String name;
 
-    private String receiverPhone;
+    private String subtitle;
 
-    private String receiverMobile;
+    private String mainImage;
 
-    private String receiverProvince;
+    private String subImages;
 
-    private String receiverCity;
+    private String detail;
 
-    private String receiverDistrict;
+    private BigDecimal price;
 
-    private String receiverAddress;
+    private Integer stock;
 
-    private String receiverZip;
+    private Integer status;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Date updateTime;
 }

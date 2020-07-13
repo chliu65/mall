@@ -6,12 +6,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.Date;
 
-/**
- * @Author swg.
- * @Date 2019/1/8 10:56
- * @CONTACT 317758022@qq.com
- * @DESC
- */
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

@@ -17,10 +17,10 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -67,10 +67,10 @@ public class UserController {
         log.info("【用户{}开始登陆】",username);
         //1.读redis
         String token=CookieUtil.readLoginToken(request);
-        if(null!=token){
+        if(StringUtils.isBlank(token)){
             String userKey=new UserKey(token).getPrefix();
             String userString=stringRedisTemplate.opsForValue().get(userKey);
-            if (!userString.isEmpty()){
+            if (StringUtils.isBlank(userString)){
                 User user=JsonUtil.Str2Obj(userString,User.class );
                 return user.getPassword().equals(MD5Util.MD5EncodeUtf8(password))?
                         ServerResponse.createBySuccess():ServerResponse.createByError(ResponseEnum.PASSWORD_WRONG);

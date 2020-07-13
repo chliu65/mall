@@ -1,8 +1,8 @@
-package com.lc.mallcategory.common.resp;
+package com.lc.mallcart.common.resp;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.lc.mallcategory.common.utils.JsonUtil;
+import com.lc.mallcart.common.utils.JsonUtil;
 import lombok.Getter;
 
 import java.io.Serializable;
@@ -24,11 +24,11 @@ public class ServerResponse<T> implements Serializable {
 //        this.code = code;
 //        this.msg = msg;
 //    }
-    private ServerResponse(int code,T data){
+    private ServerResponse(int code, T data){
         this.code = code;
         this.data = data;
     }
-    private ServerResponse(int code,String msg,T data){
+    private ServerResponse(int code, String msg, T data){
         this.code = code;
         this.msg = msg;
         this.data = data;

@@ -6,12 +6,13 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.lc.mallorder.clients.CartClient;
-import com.lc.mallorder.clients.KeyGenClient;
 import com.lc.mallorder.clients.ProductClient;
 import com.lc.mallorder.clients.ShippingClient;
+import com.lc.mallorder.clients.UniqueIdClient;
 import com.lc.mallorder.common.constants.Constants;
 import com.lc.mallorder.common.exception.GlobalException;
 import com.lc.mallorder.common.keys.ProductKey;
+import com.lc.mallorder.common.keys.ProductStockKey;
 import com.lc.mallorder.common.resp.ResponseEnum;
 import com.lc.mallorder.common.resp.ServerResponse;
 
@@ -65,7 +66,7 @@ public class OrderServiceImpl implements IOrderService {
     @Autowired
     private AmqpTemplate amqpTemplate;
     @Autowired
-    private KeyGenClient keyGenClient;
+    private UniqueIdClient uniqueIdClient;
 //    @Autowired
 //    private PayInfoMapper payInfoMapper;
 
@@ -244,17 +245,18 @@ public class OrderServiceImpl implements IOrderService {
         messageVo.setUserId(userId);
         messageVo.setShippingId(shippingId);
         //这里生成订单号，方便查询
-        String orderNoStr = keyGenClient.generateKey();
+        String orderNoStr = uniqueIdClient.getUniqueId();
         orderNoStr = orderNoStr.substring(0,orderNoStr.length()-3);
         long orderNo = Long.parseLong(orderNoStr);
         log.info("【生成的订单号为:{}】",orderNo);
         messageVo.setOrderNo(orderNo);
+        messageVo.setCartVo(cartVo);
         List<CartProductVo> cartProductVoList1=new LinkedList<>();
         for(CartProductVo cartProductVo:cartProductVoList){
             Integer productId = cartProductVo.getProductId();
             Integer quantity = cartProductVo.getQuantity();
-            ProductKey productKey=new ProductKey(String.valueOf(productId));
-            long resultCode = (long) redisUtils.changeStock(productKey.getPrefix(), String.valueOf(quantity));
+            ProductStockKey productStockKey=new ProductStockKey(String.valueOf(productId));
+            long resultCode = (long) redisUtils.changeStock(productStockKey.getPrefix(), String.valueOf(quantity));
             log.info("【lua脚本返回的数为：{}】",resultCode);
             if(resultCode == -2){
 //                map.put(productId,-2);
@@ -458,6 +460,8 @@ public class OrderServiceImpl implements IOrderService {
         order.setShippingId(shippingId);
         //发货时间等等
         //付款时间等等
+        order.setCreateTime(new Date());
+        order.setUpdateTime(new Date());
         int rowCount = orderMapper.insert(order);
         if(rowCount > 0){
             return order;
@@ -485,7 +489,7 @@ public class OrderServiceImpl implements IOrderService {
 
             String productStr = stringRedisTemplate.opsForValue().get(new ProductKey(cartProductVo.getProductId()).getPrefix());
             Product product;
-            if(productStr.isEmpty()){
+            if(StringUtils.isBlank(productStr)){
                 ServerResponse response = productClient.queryProduct(cartProductVo.getProductId());
                 if (!response.isSuccess()){
                     throw new GlobalException(response.getMsg());

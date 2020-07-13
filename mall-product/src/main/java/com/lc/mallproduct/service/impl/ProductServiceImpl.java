@@ -227,31 +227,25 @@ public class ProductServiceImpl implements IProductService {
         }
         //2.去redis中查询，没有则把商品重新添加进redis中
         String redisProductStr = stringRedisTemplate.opsForValue().get(new ProductKey(String.valueOf(productId)).getPrefix());
-        if (redisProductStr == null){
-            Product product = productMapper.selectByPrimaryKey(productId);
+        Product product;
+        if (StringUtils.isBlank(redisProductStr)){
+             product= productMapper.selectByPrimaryKey(productId);
             if(product == null|| product.getStatus() != Constants.Product.PRODUCT_ON){
                 return ServerResponse.createByError(ResponseEnum.PRODUCT_NOT_EXIST);
             }
             ProductKey productKey=new ProductKey(String.valueOf(productId));
             stringRedisTemplate.opsForValue().set(productKey.getPrefix(),JsonUtil.obj2String(product) , productKey.expireSeconds(), TimeUnit.SECONDS );
+        }else {
+            product = JsonUtil.Str2Obj(redisProductStr,Product.class);
         }
-
-        //2.获取商品
-        Product product = JsonUtil.Str2Obj(redisProductStr,Product.class);
         return ServerResponse.createBySuccess(product);
     }
 
 
     private ProductListVo assembleProductListVo(Product product) {
         ProductListVo productListVo = new ProductListVo();
-        productListVo.setId(product.getId());
-        productListVo.setSubtitle(product.getSubtitle());
-        productListVo.setMainImage(product.getMainImage());
-        productListVo.setPrice(product.getPrice());
-        productListVo.setCategoryId(product.getCategoryId());
-        productListVo.setName(product.getName());
-        productListVo.setStatus(product.getStatus());
-        productListVo.setImageHost(PropertiesUtil.getProperty("ftp.server.http.prefix","http://image.snail.com/"));
+        BeanUtils.copyProperties(product,productListVo );
+//        productListVo.setImageHost(PropertiesUtil.getProperty("ftp.server.http.prefix","http://image.snail.com/"));
         return productListVo;
     }
 
@@ -259,13 +253,10 @@ public class ProductServiceImpl implements IProductService {
         ProductDetailVo productDetailVo = new ProductDetailVo();
         BeanUtils.copyProperties(product,productDetailVo );
 
-        productDetailVo.setImageHost(PropertiesUtil.getProperty("ftp.server.http.prefix","http://image.snail.com/"));
-        //返回给前端还需要一下该商品所处品类的父品类id，所以需要去品类服务中去查询一下，这里就要用到Feign
-        if(categoryClient.getCategoryDetail(product.getCategoryId()).isSuccess()){
-            ServerResponse response = categoryClient.getCategoryDetail(product.getCategoryId());
-            Object object = response.getData();
-            String objStr = JsonUtil.obj2String(object);
-            Category category = (Category) JsonUtil.Str2Obj(objStr,Category.class);
+//        productDetailVo.setImageHost(PropertiesUtil.getProperty("ftp.server.http.prefix","http://image.snail.com/"));
+        ServerResponse categorySeverResponse=categoryClient.getCategoryDetail(product.getCategoryId());
+        if(categorySeverResponse.isSuccess()){
+            Category category = (Category) JsonUtil.Str2Obj( categorySeverResponse.getData().toString(),Category.class);
             productDetailVo.setParentCategoryId(category.getParentId());
         }else {
             productDetailVo.setParentCategoryId(0);

@@ -2,12 +2,7 @@ package com.lc.mallorder.vo;
 
 import lombok.Data;
 
-/**
- * @Author swg.
- * @Date 2019/1/5 21:48
- * @CONTACT 317758022@qq.com
- * @DESC
- */
+
 @Data
 public class ShippingVo {
     private String receiverName;

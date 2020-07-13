@@ -5,6 +5,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @FeignClient("mall-uniqueid")
 public interface UniqueIdClient {
-    @RequestMapping("/getUniqueId")
+    @RequestMapping("/uniqueid/getUniqueId")
     String getUniqueId();
 }

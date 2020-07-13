@@ -8,12 +8,7 @@ import lombok.ToString;
 import java.io.Serializable;
 import java.util.Date;
 
-/**
- * @Author swg.
- * @Date 2018/12/31 21:01
- * @CONTACT 317758022@qq.com
- * @DESC 用户实体类
- */
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

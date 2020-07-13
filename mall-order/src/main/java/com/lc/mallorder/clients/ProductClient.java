@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 
-@FeignClient("product-service")
+@FeignClient("mall-product")
 public interface ProductClient {
     @RequestMapping("/product/queryProduct.do")
     ServerResponse queryProduct(@RequestParam("productId") Integer productId);

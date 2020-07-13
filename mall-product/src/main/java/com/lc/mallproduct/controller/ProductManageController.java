@@ -142,6 +142,4 @@ public class ProductManageController {
         return resultMap;
     }
 
-
-
 }

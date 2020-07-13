@@ -2,6 +2,8 @@ package com.lc.mallproduct.common.resp;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+import com.lc.mallproduct.common.utils.JsonUtil;
 import lombok.Getter;
 
 import java.io.Serializable;
@@ -19,15 +21,15 @@ public class ServerResponse<T> implements Serializable {
     private ServerResponse(int code){
         this.code = code;
     }
-    private ServerResponse(int code,String msg){
-        this.code = code;
-        this.msg = msg;
-    }
-    private ServerResponse(int code,T data){
+//    private ServerResponse(int code,String msg){
+//        this.code = code;
+//        this.msg = msg;
+//    }
+    private ServerResponse(int code, T data){
         this.code = code;
         this.data = data;
     }
-    private ServerResponse(int code,String msg,T data){
+    private ServerResponse(int code, String msg, T data){
         this.code = code;
         this.msg = msg;
         this.data = data;
@@ -42,30 +44,30 @@ public class ServerResponse<T> implements Serializable {
      * 成功的方法
      */
     public static <T>ServerResponse<T> createBySuccess(){
-        return new ServerResponse<>(ResponseEnum.SUCCESS.getCode(),ResponseEnum.SUCCESS.getMsg());
+        return new ServerResponse(ResponseEnum.SUCCESS.getCode(),ResponseEnum.SUCCESS.getMsg());
     }
     public static <T>ServerResponse<T> createBySuccessMessage(String message){
-        return new ServerResponse<>(ResponseEnum.SUCCESS.getCode(),message);
+        return new ServerResponse(ResponseEnum.SUCCESS.getCode(),message,null);
     }
     public static <T>ServerResponse<T> createBySuccess(T data){
-        return new ServerResponse<>(ResponseEnum.SUCCESS.getCode(),data);
+        return new ServerResponse(ResponseEnum.SUCCESS.getCode(), JsonUtil.obj2String(data));
     }
-    public static <T>ServerResponse<T> createBySuccess(String message,T data){
-        return new ServerResponse<>(ResponseEnum.SUCCESS.getCode(),message,data);
-    }
+//    public static <T>ServerResponse<T> createBySuccess(String message,T data){
+//        return new ServerResponse<>(ResponseEnum.SUCCESS.getCode(),message,JsonUtil.obj2String(data));
+//    }
 
     /**
      * 失败的方法
      */
     public static <T>ServerResponse<T> createByError(ResponseEnum responseEnum){
-        return new ServerResponse<>(responseEnum.getCode(),responseEnum .getMsg());
+        return new ServerResponse(responseEnum.getCode(),responseEnum .getMsg());
     }
     public static <T>ServerResponse<T> createByErrorMessage(String msg){
-        return new ServerResponse<>(ResponseEnum.ILLEGAL_ARGUMENTS.getCode(),msg);
+        return new ServerResponse(ResponseEnum.ILLEGAL_ARGUMENTS.getCode(),msg);
     }
-    public static <T>ServerResponse<T> createByErrorCodeMessage(int code,String msg){
-        return new ServerResponse<>(code,msg);
-    }
+//    public static <T>ServerResponse<T> createByErrorCodeMessage(int code,String msg){
+//        return new ServerResponse(code,msg);
+//    }
 
 
 
