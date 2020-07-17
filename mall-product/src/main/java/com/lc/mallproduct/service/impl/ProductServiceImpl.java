@@ -12,21 +12,21 @@ import com.lc.mallproduct.common.resp.ResponseEnum;
 import com.lc.mallproduct.common.resp.ServerResponse;
 import com.lc.mallproduct.common.utils.DateTimeUtil;
 import com.lc.mallproduct.common.utils.JsonUtil;
-import com.lc.mallproduct.common.utils.PropertiesUtil;
 import com.lc.mallproduct.dao.ProductMapper;
 import com.lc.mallproduct.entity.Category;
 import com.lc.mallproduct.entity.Product;
-import com.lc.mallproduct.service.IProductService;
+import com.lc.mallproduct.service.ProductService;
 import com.lc.mallproduct.vo.ProductDetailVo;
 import com.lc.mallproduct.vo.ProductListVo;
+import com.lc.mallproduct.vo.StockReduceVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Time;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -34,7 +34,7 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
-public class ProductServiceImpl implements IProductService {
+public class ProductServiceImpl implements ProductService {
     @Autowired
     private ProductMapper productMapper;
     @Autowired
@@ -290,6 +290,24 @@ public class ProductServiceImpl implements IProductService {
             if(productId != null  && product.getStatus().equals(Constants.Product.PRODUCT_ON)){
                 ProductKey productKey=new ProductKey(String.valueOf(productId));
                 stringRedisTemplate.opsForValue().set(productKey.getPrefix(),JsonUtil.obj2String(product) ,productKey.expireSeconds() , TimeUnit.SECONDS);
+            }
+        }
+        return ServerResponse.createBySuccess();
+    }
+
+    @Override
+    @Transactional
+    public ServerResponse reduceStock(List<StockReduceVo> stockReduceVoList) {
+        for (StockReduceVo stockReduceVo:stockReduceVoList){
+            Product product=productMapper.selectByPrimaryKey(stockReduceVo.getProductId());
+            if (product==null){
+                throw new GlobalException(ResponseEnum.PRODUCT_NOT_EXIST);
+            }
+            int result=productMapper.reduceStock(stockReduceVo);
+            //更新库存失败，库存不足
+            if (result==0){
+                throw new GlobalException(ResponseEnum.STOCK_IS_NOT_ENOUGH);
+
             }
         }
         return ServerResponse.createBySuccess();

@@ -3,6 +3,7 @@ package com.lc.mallproduct.dao;
 
 import com.lc.mallproduct.entity.Product;
 
+import com.lc.mallproduct.vo.StockReduceVo;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -30,4 +31,6 @@ public interface ProductMapper {
     List<Product> selectByNameAndCategoryIds(@Param("productName") String productName, @Param("categoryIdList") List<Integer> categoryIdList);
 
     Integer selectStockByProductId(Integer id);
+
+    Integer reduceStock(StockReduceVo stockReduceVo);
 }

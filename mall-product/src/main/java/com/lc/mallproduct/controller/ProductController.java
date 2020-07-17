@@ -1,21 +1,23 @@
 package com.lc.mallproduct.controller;
 
 
-import com.github.pagehelper.PageInfo;
 import com.lc.mallproduct.common.resp.ServerResponse;
-import com.lc.mallproduct.service.IProductService;
-import com.lc.mallproduct.vo.ProductDetailVo;
+import com.lc.mallproduct.service.ProductService;
+import com.lc.mallproduct.vo.StockReduceVo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 
 @RestController
 @RequestMapping("/product")
 public class ProductController {
     @Autowired
-    private IProductService productService;
+    private ProductService productService;
 
     @RequestMapping("detail.do")
     public ServerResponse detail(@RequestParam(value = "productId",required = true) Integer productId){
@@ -35,6 +37,11 @@ public class ProductController {
     @RequestMapping("/queryProduct.do")
     public ServerResponse queryProduct(@RequestParam("productId") Integer productId){
         return productService.queryProduct(productId);
+    }
+
+    @RequestMapping("/reduceStock.do")
+    public ServerResponse reduceStock(@RequestBody List<StockReduceVo> stockReduceVoList){
+        return productService.reduceStock(stockReduceVoList);
     }
 
     /**

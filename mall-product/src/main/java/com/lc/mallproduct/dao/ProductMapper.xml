@@ -212,4 +212,10 @@
   <select id="selectStockByProductId" parameterType="int" resultType="int">
     SELECT stock from mmall_product WHERE id = #{id} for update
   </select>
+  <update id="reduceStock"   parameterType="com.lc.mallproduct.vo.StockReduceVo">
+    UPDATE mmall_product
+    SET stock=stock-#{reduceNum}
+    WHERE id=#{productId}
+    AND stock>0
+  </update>
 </mapper>

@@ -26,7 +26,9 @@ public enum ResponseEnum {
     PRODUCT_NOT_EXIST(40008,"商品不存在"),
 
     //服务端错误
-    SERVER_ERROR(50000,"服务器内部错误");
+    SERVER_ERROR(50000,"服务器内部错误"),
+
+    STOCK_IS_NOT_ENOUGH(50002,"库存不足");
 
 ;
 

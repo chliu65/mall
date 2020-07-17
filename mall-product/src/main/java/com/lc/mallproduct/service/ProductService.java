@@ -5,8 +5,11 @@ import com.github.pagehelper.PageInfo;
 import com.lc.mallproduct.common.resp.ServerResponse;
 import com.lc.mallproduct.entity.Product;
 import com.lc.mallproduct.vo.ProductDetailVo;
+import com.lc.mallproduct.vo.StockReduceVo;
 
-public interface IProductService {
+import java.util.List;
+
+public interface ProductService {
     /** 后台获取产品分页列表 **/
     ServerResponse list(int pageNum, int pageSize);
 
@@ -36,4 +39,6 @@ public interface IProductService {
 
     /**  补充接口2：预置商品列表信息到redis **/
     ServerResponse preInitProductListToRedis();
+
+    ServerResponse reduceStock(List<StockReduceVo> stockReduceVoList);
 }

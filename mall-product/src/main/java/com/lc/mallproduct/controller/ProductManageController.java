@@ -13,7 +13,7 @@ import com.lc.mallproduct.common.utils.PropertiesUtil;
 import com.lc.mallproduct.entity.Product;
 import com.lc.mallproduct.entity.User;
 import com.lc.mallproduct.service.IFileService;
-import com.lc.mallproduct.service.IProductService;
+import com.lc.mallproduct.service.ProductService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +33,7 @@ import java.util.Map;
 @Slf4j
 public class ProductManageController {
     @Autowired
-    private IProductService productService;
+    private ProductService productService;
     @Autowired
     private IFileService fileService;
     @Autowired
