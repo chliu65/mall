@@ -38,3 +38,8 @@ mybatis:
   mapper-locations: classpath:com/lc/mallorder/dao/*.xml
   type-aliases-package: classpath:com.lc.mallorder.entity
 
+timer:
+  tick: 1000
+  wheelsize: 60
+
+

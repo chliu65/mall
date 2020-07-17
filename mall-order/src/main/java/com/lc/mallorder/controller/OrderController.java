@@ -4,7 +4,7 @@ package com.lc.mallorder.controller;
 import com.lc.mallorder.common.resp.ResponseEnum;
 import com.lc.mallorder.common.resp.ServerResponse;
 import com.lc.mallorder.entity.User;
-import com.lc.mallorder.service.IOrderService;
+import com.lc.mallorder.service.OrderService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,7 +21,7 @@ import java.util.Map;
 @Slf4j
 public class OrderController extends BaseController{
     @Autowired
-    private IOrderService orderService;
+    private OrderService orderService;
 
     /**
      * 创建订单
@@ -75,7 +75,7 @@ public class OrderController extends BaseController{
     }
 
 
-/*
+
     @RequestMapping("pay.do")
     public ServerResponse pay(@RequestParam("orderNo") Long orderNo, HttpServletRequest request){
         User user = getCurrentUser(request);
@@ -99,8 +99,8 @@ public class OrderController extends BaseController{
         }
         return ServerResponse.createBySuccess(false);
     }
-*/
-/*
+
+
     @RequestMapping("alipay_callback.do")
     public Object alipayCallback(HttpServletRequest request){
         Map<String,String> params = Maps.newHashMap();
@@ -155,7 +155,7 @@ public class OrderController extends BaseController{
          */
 
         //非常重要,验证回调的正确性,是不是支付宝发的.并且呢还要避免重复通知.
-/*
+
         params.remove("sign_type");
         try {
             boolean alipayRSACheckedV2 = AlipaySignature.rsaCheckV2(params, Configs.getAlipayPublicKey(),"utf-8",Configs.getSignType());
@@ -173,5 +173,5 @@ public class OrderController extends BaseController{
         }
         return Constants.AlipayCallback.RESPONSE_FAILED;
     }
-    */
+
 }

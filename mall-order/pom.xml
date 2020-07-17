@@ -20,6 +20,15 @@
 	</properties>
 
 	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-amqp</artifactId>
+		</dependency>
+		<dependency>
+		<groupId>com.github.wxpay</groupId>
+		<artifactId>wxpay-sdk</artifactId>
+		<version>3.0.9</version>
+		</dependency>
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-bus-amqp</artifactId>

@@ -28,7 +28,11 @@ public enum ResponseEnum {
     ORDER_NOT_EXIST(40010,"订单不存在"),
 
     //服务端错误
-    SERVER_ERROR(50000,"服务器内部错误");
+    SERVER_ERROR(50000,"服务器内部错误"),
+
+    ACQUIRE_NATIVE_ERROR(50001,"获取支付二维码错误"),
+
+    PAYMENT_FINISHED(50003,"订单已支付");
 
 ;
 

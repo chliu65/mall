@@ -20,6 +20,10 @@ public class Constants {
     /***redis user相关的key以这个打头**/
     public static final String TOKEN_PREFIX = "user_";
 
+
+    /*订单锁定时间   */
+    public static final long ORDER_LOCKERD_TIME= 60 * 1000;//ms
+
     /**
      * 用户登陆redis的过期时间
      */
@@ -29,6 +33,8 @@ public class Constants {
         int PRODUCT_KEY_EXPIRES=24*60*60;
         int USER_KEY_EXPIRES = 3600*24*2;
         int PRODUCT_STOCK_KEY_EXPIRES = -1;
+        int ORDER_KEY_EXPIRES =15* 60 * 60;//s
+        int ORDER_STATUS_KEY_EXPIRES=24 * 60* 60;
     }
 
     /** 用户注册判断重复的参数类型 start **/
@@ -54,6 +60,10 @@ public class Constants {
     }
     public interface ProductListOrderBy{
         Set<String> PRICE_ASC_DESC = Sets.newHashSet("price_desc","price_asc");
+    }
+    public interface OrderKeyPrefix{
+        static final String ORDER_DETAIL_KEY="ORDER_DETAIL_KEY";
+        static final String ORDER_STATUS_KEY="ORDER_STATUS_KEY";
     }
     public enum OrderStatusEnum{
         CANCELED(0,"已取消"),

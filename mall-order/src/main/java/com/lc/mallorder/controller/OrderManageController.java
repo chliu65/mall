@@ -2,7 +2,7 @@ package com.lc.mallorder.controller;
 
 import com.github.pagehelper.PageInfo;
 import com.lc.mallorder.common.resp.ServerResponse;
-import com.lc.mallorder.service.IOrderService;
+import com.lc.mallorder.service.OrderService;
 
 import com.lc.mallorder.vo.OrderVo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class OrderManageController {
 
     @Autowired
-    private IOrderService orderService;
+    private OrderService orderService;
 
     @RequestMapping("list.do")
     public ServerResponse<PageInfo> orderList(@RequestParam(value = "pageNum",defaultValue = "1") int pageNum,

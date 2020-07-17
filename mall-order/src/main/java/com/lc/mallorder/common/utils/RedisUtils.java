@@ -58,4 +58,12 @@ public class RedisUtils {
 
     }
 
+    public Object changeOrderStatus(String orderStatusKey,String newOrderStatus,String oldOrderStatus){
+        DefaultRedisScript<String> redisScript = new DefaultRedisScript<>();
+        redisScript.setScriptSource(new ResourceScriptSource(new ClassPathResource("lua/changeorderstatus.lua")));
+        redisScript.setResultType(String.class);
+        return redisTemplate.execute(redisScript, Collections.singletonList(orderStatusKey),newOrderStatus,oldOrderStatus );
+
+    }
+
 }

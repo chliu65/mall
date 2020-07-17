@@ -34,4 +34,8 @@ public class Parameters {
 //    @Value("${rabbitmq.VirtualHost}")
 //    private String rmqVirtualHost;
 //    /*****curator config end*******/
+    @Value("${timer.tick}")
+    private long tick;
+    @Value("${timer.wheelsize}")
+    private int wheelsize;
 }

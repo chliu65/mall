@@ -4,13 +4,13 @@ package com.lc.mallorder.service;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.lc.mallorder.clients.CartClient;
 import com.lc.mallorder.clients.ProductClient;
 import com.lc.mallorder.clients.ShippingClient;
 import com.lc.mallorder.clients.UniqueIdClient;
 import com.lc.mallorder.common.constants.Constants;
 import com.lc.mallorder.common.exception.GlobalException;
+import com.lc.mallorder.common.keys.OrderKey;
 import com.lc.mallorder.common.keys.ProductKey;
 import com.lc.mallorder.common.keys.ProductStockKey;
 import com.lc.mallorder.common.resp.ResponseEnum;
@@ -20,14 +20,11 @@ import com.lc.mallorder.common.utils.JsonUtil;
 import com.lc.mallorder.common.utils.RedisUtils;
 import com.lc.mallorder.dao.OrderItemMapper;
 import com.lc.mallorder.dao.OrderMapper;
-import com.lc.mallorder.dao.PayInfoMapper;
 import com.lc.mallorder.entity.Order;
 import com.lc.mallorder.entity.OrderItem;
 import com.lc.mallorder.entity.Product;
 import com.lc.mallorder.entity.Shipping;
 import com.lc.mallorder.vo.*;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -39,8 +36,6 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.File;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -48,7 +43,7 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
-public class OrderServiceImpl implements IOrderService {
+public class OrderServiceImpl implements OrderService {
     @Autowired
     private OrderMapper orderMapper;
     @Autowired
@@ -464,6 +459,14 @@ public class OrderServiceImpl implements IOrderService {
         order.setUpdateTime(new Date());
         int rowCount = orderMapper.insert(order);
         if(rowCount > 0){
+            OrderKey orderStatusKey=new OrderKey(Constants.RedisCacheExtime.ORDER_STATUS_KEY_EXPIRES,
+                    Constants.OrderKeyPrefix.ORDER_STATUS_KEY,orderNo);
+            OrderKey orderKey=new OrderKey(Constants.OrderKeyPrefix.ORDER_DETAIL_KEY,orderNo);
+            stringRedisTemplate.opsForValue().set(orderKey.getPrefix(), JsonUtil.obj2String(order), orderKey.expireSeconds(), TimeUnit.SECONDS);
+            stringRedisTemplate.opsForValue().set(orderStatusKey.getPrefix(),
+                    String.valueOf(Constants.OrderStatusEnum.NO_PAY.getCode()),
+                    Constants.RedisCacheExtime.ORDER_STATUS_KEY_EXPIRES ,
+                    TimeUnit.SECONDS );
             return order;
         }
         return null;
@@ -520,6 +523,7 @@ public class OrderServiceImpl implements IOrderService {
             orderItem.setTotalPrice(product.getPrice().multiply(new BigDecimal(cartProductVo.getQuantity())));
             orderItem.setOrderNo(orderNo);
             orderItemList.add(orderItem);
+            orderItem.setId(null);
         }
         return ServerResponse.createBySuccess(orderItemList);
     }
@@ -690,6 +694,31 @@ public class OrderServiceImpl implements IOrderService {
             return ServerResponse.createBySuccess();
         }
         return ServerResponse.createByErrorMessage("订单未付款或已取消");
+    }
+
+    //需要确保不会重复完成订单工作
+    @Transactional
+    @Override
+    public ServerResponse finishOrder(String orderNo) {
+        Order order=orderMapper.selectByOrderNo(Long.valueOf(orderNo));
+        if (order.getStatus()==Constants.OrderStatusEnum.PAID.getCode()){
+            throw new GlobalException("订单已完成，勿重复提交");
+        }
+        order.setUpdateTime(new Date());
+        order.setStatus(Constants.OrderStatusEnum.PAID.getCode());
+        List<OrderItem> orderItemList=orderItemMapper.getByOrderNo(Long.valueOf(orderNo));
+        List<StockReduceVo> stockReduceVoList=new LinkedList<>();
+        for (OrderItem orderItem:orderItemList){
+            StockReduceVo stockReduceVo=new StockReduceVo(orderItem.getProductId(),orderItem.getQuantity());
+            stockReduceVoList.add(stockReduceVo);
+        }
+        if (stockReduceVoList.size()>0){
+            ServerResponse serverResponse=productClient.reduceStock(stockReduceVoList);
+            if (serverResponse.isSuccess()){
+                return serverResponse;
+            }
+        }
+        throw new GlobalException(ResponseEnum.SERVER_ERROR);
     }
 /*
     @Override

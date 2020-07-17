@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 
-public interface IOrderService {
+public interface OrderService {
     /***后台订单管理 start***/
     /***获取订单列表，分页***/
     ServerResponse<PageInfo> manageList(int pageNum, int pageSize);
@@ -31,22 +31,51 @@ public interface IOrderService {
     /**取消订单**/
     ServerResponse cancel(Integer userId, Long orderNo);
 
-//    /**获取订单商品详情**/
+//    /**
 //    ServerResponse getOrderCartProduct(Integer userId);
 
-    /**订单详情**/
+    /**
+     * 订单详情
+     * @param userId
+     * @param orderNo
+     * @return
+     */
     ServerResponse getOrderDetail(Integer userId, Long orderNo);
 
-    /**用户订单列表**/
+    /**
+     * 用户订单列表
+     * @param userId
+     * @param pageNum
+     * @param pageSize
+     * @return
+     */
     ServerResponse getOrderList(Integer userId, int pageNum, int pageSize);
 
 
-    /**扣减库存、下订单**/
+    /**
+     * 扣减库存(redis预减库存)、下订单*
+     * @param result
+     * @return
+     */
     ServerResponse stockAndOrderprocess(MessageVo result);
 
 //    ServerResponse pay(Integer id, Long orderNo, String path);
 
+    /**
+     * 主动查询订单支付结果
+     * @param id
+     * @param orderNo
+     * @return
+     */
     ServerResponse query_order_pay_status(Integer id, Long orderNo);
+
+    /**
+     * 支付成功，完成下单，数据库扣库存
+     * @param orderNo
+     * @return
+     */
+    ServerResponse finishOrder(String orderNo);
+
 
 //    ServerResponse aliCallback(Map<String, String> params);
 }

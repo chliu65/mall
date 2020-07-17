@@ -1,8 +1,10 @@
 package com.lc.mallorder.message;
 
 
+import com.lc.mallorder.common.timer.Timer;
 import com.lc.mallorder.common.utils.JsonUtil;
-import com.lc.mallorder.service.IOrderService;
+import com.lc.mallorder.common.utils.RedisUtils;
+import com.lc.mallorder.service.OrderService;
 import com.lc.mallorder.vo.MessageVo;
 import lombok.extern.slf4j.Slf4j;
 
@@ -11,17 +13,21 @@ import org.springframework.amqp.rabbit.annotation.Queue;
 import org.springframework.amqp.rabbit.annotation.QueueBinding;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 
 @Component
 @Slf4j
 public class MessageReceiver {
     @Autowired
-    private IOrderService orderService;
-
+    private OrderService orderService;
+    @Autowired
+    private Timer timer;
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    private RedisUtils redisUtils;
     @RabbitListener(bindings = @QueueBinding(
             value = @Queue("order-queue"),
             exchange = @Exchange("order-exchange")
@@ -35,6 +41,10 @@ public class MessageReceiver {
         //一种方案是：利用消息队列，订单服务订阅扣减库存服务，一旦发现数据库的库存扣减成功，就去扣减插入订单；
         //如果库存扣减不成功，那么订单也不会写入
         orderService.stockAndOrderprocess(result);
+        //模拟未支付，设置订单超时检查任务
+//        OrderDelayHandlerTask orderDelayHandlerTask=new OrderDelayHandlerTask(result.getOrderNo(),redisUtils);
+//        TimerTask timerTask=new TimerTask(Constants.ORDER_LOCKERD_TIME,orderDelayHandlerTask);
+//        timer.addTask(timerTask);
     }
 
 }
