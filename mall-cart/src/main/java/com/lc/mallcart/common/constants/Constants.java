@@ -29,6 +29,8 @@ public class Constants {
         int PRODUCT_KEY_EXPIRES=24*60*60;
         int USER_KEY_EXPIRES = 3600*24*2;
         int PRODUCT_STOCK_KEY_EXPIRES = -1;
+        int ORDER_KEY_EXPIRES =15* 60 * 60;//s
+        int ORDER_STATUS_KEY_EXPIRES=24 * 60* 60;
     }
 
     /** 用户注册判断重复的参数类型 start **/
@@ -148,5 +150,35 @@ public class Constants {
 
         String STOCK_IS_ENOUGH = "STOCK_IS_ENOUGH ";
         String STOCK_IS_NOT_ENOUGH = "STOCK_IS_NOT_ENOUGH";
+    }
+
+    public static final String CART_EXCHANGE="cart_exchange";
+
+    public enum  QueueNameAndBindingEnum{
+        UPDATE_CART("cart-queue-update","update");
+
+        private String queueName;
+        private String routingKey;
+
+        QueueNameAndBindingEnum(String queueName, String routingKey) {
+            this.queueName = queueName;
+            this.routingKey = routingKey;
+        }
+
+        public String getQueueName() {
+            return queueName;
+        }
+
+        public void setQueueName(String queueName) {
+            this.queueName = queueName;
+        }
+
+        public String getRoutingKey() {
+            return routingKey;
+        }
+
+        public void setRoutingKey(String routingKey) {
+            this.routingKey = routingKey;
+        }
     }
 }

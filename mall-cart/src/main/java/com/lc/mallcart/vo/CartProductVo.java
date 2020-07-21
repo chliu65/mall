@@ -7,12 +7,7 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
-/**
- * @Author swg.
- * @Date 2019/1/5 15:18
- * @CONTACT 317758022@qq.com
- * @DESC
- */
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
