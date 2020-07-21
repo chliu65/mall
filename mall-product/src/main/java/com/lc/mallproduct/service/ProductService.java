@@ -34,11 +34,8 @@ public interface ProductService {
     /** 从redis中查询商品，没有则将商品放进redis中 **/
     ServerResponse queryProduct(Integer productId);
 
-    /**  补充接口1：预置商品库存到redis **/
-    ServerResponse preInitProductStcokToRedis();
-
-    /**  补充接口2：预置商品列表信息到redis **/
-    ServerResponse preInitProductListToRedis();
+    /**  预置商品库存与到redis **/
+    ServerResponse preInitProductInfoAndStcokToRedis();
 
     ServerResponse reduceStock(List<StockReduceVo> stockReduceVoList);
 }

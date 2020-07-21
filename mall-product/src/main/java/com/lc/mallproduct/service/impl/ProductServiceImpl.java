@@ -17,6 +17,7 @@ import com.lc.mallproduct.entity.Category;
 import com.lc.mallproduct.entity.Product;
 import com.lc.mallproduct.service.ProductService;
 import com.lc.mallproduct.vo.ProductDetailVo;
+import com.lc.mallproduct.vo.ProductInfoVo;
 import com.lc.mallproduct.vo.ProductListVo;
 import com.lc.mallproduct.vo.StockReduceVo;
 import lombok.extern.slf4j.Slf4j;
@@ -166,7 +167,7 @@ public class ProductServiceImpl implements ProductService {
         if(null==product || product.getStatus() != Constants.Product.PRODUCT_ON){
             return ServerResponse.createByError(ResponseEnum.PRODUCT_NOT_EXIST);
         }
-        ProductDetailVo productDetailVo = assembleProductDetailVo(product);
+       ProductDetailVo productDetailVo = assembleProductDetailVo(product);
         return ServerResponse.createBySuccess(productDetailVo);
     }
 
@@ -210,15 +211,21 @@ public class ProductServiceImpl implements ProductService {
         //封装返回对象
         List<ProductListVo> productListVoList = Lists.newArrayList();
         for(Product product : productList){
-            ProductListVo productListVo = assembleProductListVo(product);
+            ProductListVo productListVo = new ProductListVo();
+            BeanUtils.copyProperties(product,productListVo );
             productListVoList.add(productListVo);
         }
         //返回
-        PageInfo pageInfo = new PageInfo(productList);
+        PageInfo pageInfo = new PageInfo();
         pageInfo.setList(productListVoList);
         return ServerResponse.createBySuccess(pageInfo);
     }
 
+    /**
+     * 获取商品静态信息（访问量大，存入redis）
+     * @param productId
+     * @return
+     */
     @Override
     public ServerResponse queryProduct(Integer productId) {
         //1.校验参数
@@ -226,19 +233,21 @@ public class ProductServiceImpl implements ProductService {
             return ServerResponse.createByError(ResponseEnum.ILLEGAL_ARGUMENTS);
         }
         //2.去redis中查询，没有则把商品重新添加进redis中
-        String redisProductStr = stringRedisTemplate.opsForValue().get(new ProductKey(String.valueOf(productId)).getPrefix());
-        Product product;
+        ProductKey productKey=new ProductKey(String.valueOf(productId));
+        String redisProductStr = stringRedisTemplate.opsForValue().get(productKey.getPrefix());
+        ProductInfoVo productInfoVo=new ProductInfoVo();
         if (StringUtils.isBlank(redisProductStr)){
-             product= productMapper.selectByPrimaryKey(productId);
+             Product product= productMapper.selectByPrimaryKey(productId);
             if(product == null|| product.getStatus() != Constants.Product.PRODUCT_ON){
                 return ServerResponse.createByError(ResponseEnum.PRODUCT_NOT_EXIST);
             }
-            ProductKey productKey=new ProductKey(String.valueOf(productId));
-            stringRedisTemplate.opsForValue().set(productKey.getPrefix(),JsonUtil.obj2String(product) , productKey.expireSeconds(), TimeUnit.SECONDS );
+            BeanUtils.copyProperties(product,productInfoVo );
+            ProductKey newProductKey=new ProductKey(String.valueOf(productId));
+            stringRedisTemplate.opsForValue().set(newProductKey.getPrefix(),JsonUtil.obj2String(productInfoVo) , productKey.expireSeconds(), TimeUnit.SECONDS );
         }else {
-            product = JsonUtil.Str2Obj(redisProductStr,Product.class);
+            productInfoVo =(ProductInfoVo) JsonUtil.Str2Obj(redisProductStr,ProductInfoVo.class);
         }
-        return ServerResponse.createBySuccess(product);
+        return ServerResponse.createBySuccess(productInfoVo);
     }
 
 
@@ -267,34 +276,35 @@ public class ProductServiceImpl implements ProductService {
     }
 
 
-
+    /**
+     * redis中商品静态信息与库存预热
+     * @return
+     */
     @Override
-    public ServerResponse preInitProductStcokToRedis() {
+    public ServerResponse preInitProductInfoAndStcokToRedis() {
         List<Product> productList = productMapper.selectList();
         for(Product product:productList){
             Integer productId = product.getId();
             Integer stock = product.getStock();
             if(productId != null && stock != null && product.getStatus().equals(Constants.Product.PRODUCT_ON)){
                 ProductStockKey productStockKey=new ProductStockKey(String.valueOf(productId));
-                stringRedisTemplate.opsForValue().set(productStockKey.getPrefix(),String.valueOf(stock) ,productStockKey.expireSeconds() ,TimeUnit.SECONDS );
-            }
-        }
-        return ServerResponse.createBySuccess();
-    }
-
-    @Override
-    public ServerResponse preInitProductListToRedis() {
-        List<Product> productList = productMapper.selectList();
-        for(Product product:productList){
-            Integer productId = product.getId();
-            if(productId != null  && product.getStatus().equals(Constants.Product.PRODUCT_ON)){
                 ProductKey productKey=new ProductKey(String.valueOf(productId));
-                stringRedisTemplate.opsForValue().set(productKey.getPrefix(),JsonUtil.obj2String(product) ,productKey.expireSeconds() , TimeUnit.SECONDS);
+                ProductInfoVo productInfoVo=new ProductInfoVo();
+                BeanUtils.copyProperties(product,productInfoVo );
+                //库存信息需要在redis中永久保存
+                stringRedisTemplate.opsForValue().set(productStockKey.getPrefix(),String.valueOf(stock) ,productStockKey.expireSeconds() ,TimeUnit.SECONDS );
+                stringRedisTemplate.opsForValue().set(productKey.getPrefix(),JsonUtil.obj2String(productInfoVo) ,productKey.expireSeconds() ,TimeUnit.SECONDS );
             }
         }
         return ServerResponse.createBySuccess();
     }
 
+
+    /**
+     * 支付成功数据库扣库存
+     * @param stockReduceVoList
+     * @return
+     */
     @Override
     @Transactional
     public ServerResponse reduceStock(List<StockReduceVo> stockReduceVoList) {

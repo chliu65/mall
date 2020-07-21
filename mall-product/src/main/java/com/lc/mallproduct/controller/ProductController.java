@@ -14,17 +14,22 @@ import java.util.List;
 
 
 @RestController
-@RequestMapping("/product")
+@RequestMapping("/product/")
 public class ProductController {
     @Autowired
     private ProductService productService;
 
+    /**
+     * 查询商品所有信息
+     * @param productId
+     * @return
+     */
     @RequestMapping("detail.do")
     public ServerResponse detail(@RequestParam(value = "productId",required = true) Integer productId){
         return productService.getPortalProductDetail(productId);
     }
 
-    //?????
+    //搜索罗列商品
     @RequestMapping("list.do")
     public ServerResponse list(@RequestParam(value = "keyword",required = false)String keyword,
                                          @RequestParam(value = "categoryId",required = false)Integer categoryId,
@@ -34,32 +39,36 @@ public class ProductController {
         return productService.portalList(keyword,categoryId,orderBy,pageNum,pageSize);
     }
 
-    @RequestMapping("/queryProduct.do")
+    /**
+     * 查询商品静态信息，会存入redis中
+     * @param productId
+     * @return
+     */
+    @RequestMapping("queryProduct.do")
     public ServerResponse queryProduct(@RequestParam("productId") Integer productId){
         return productService.queryProduct(productId);
     }
 
-    @RequestMapping("/reduceStock.do")
+    /**
+     * 用于支付后扣减库存
+     * @param stockReduceVoList
+     * @return
+     */
+    @RequestMapping("reduceStock.do")
     public ServerResponse reduceStock(@RequestBody List<StockReduceVo> stockReduceVoList){
         return productService.reduceStock(stockReduceVoList);
     }
 
     /**
-     * 补充接口1：预置每个商品库存到redis中
+     * 预置商品静态信息与库存到redis中
      */
-    @RequestMapping("/preInitProductStcokToRedis.do")
+    @RequestMapping("preInitProductStcokToRedis.do")
     public ServerResponse preInitProductStcokToRedis(){
-        return productService.preInitProductStcokToRedis();
+        return productService.preInitProductInfoAndStcokToRedis();
     }
 
 
-    /**
-     * 补充接口2：预置所有商品到redis中
-     */
-    @RequestMapping("/preInitProductListToRedis.do")
-    public ServerResponse preInitProductListToRedis(){
-        return productService.preInitProductListToRedis();
-    }
+
 
 
 }
