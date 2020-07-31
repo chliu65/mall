@@ -2,7 +2,11 @@ package com.lc.mallcart.controller;
 
 
 import com.lc.mallcart.common.constants.Constants;
+import com.lc.mallcart.common.keys.UserKey;
+import com.lc.mallcart.common.resp.ResponseEnum;
 import com.lc.mallcart.common.resp.ServerResponse;
+import com.lc.mallcart.common.utils.CookieUtil;
+import com.lc.mallcart.common.utils.JsonUtil;
 import com.lc.mallcart.entity.User;
 import com.lc.mallcart.service.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,19 +22,28 @@ import javax.servlet.http.HttpServletRequest;
  */
 @RestController
 @RequestMapping("/cart/")
-public class CartController extends BaseController{
+public class CartController {
     @Autowired
     private CartService cartService;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
 
+    public User getUser(HttpServletRequest request){
+        String token = CookieUtil.readLoginToken(request);
+        UserKey userKey=new UserKey(token);
+        String  userStr=stringRedisTemplate.opsForValue().get(userKey.getPrefix());
+        return JsonUtil.Str2Obj(userStr,User.class );
+    }
+
     /**
      * 1.购物车添加商品
      */
     @RequestMapping("add.do")
-    public ServerResponse add(HttpServletRequest httpServletRequest, Integer productId, Integer count){
-        User user = getCurrentUser(httpServletRequest);
-
+    public ServerResponse add(HttpServletRequest httpServletRequest, @RequestParam("productId") Integer productId, @RequestParam("count") Integer count){
+        User user = getUser(httpServletRequest);
+        if (productId==null || count==null || count.intValue()<=0){
+            return ServerResponse.createByError(ResponseEnum.ILLEGAL_ARGUMENTS);
+        }
         return cartService.add(user.getId(),productId,count);
     }
 
@@ -39,10 +52,10 @@ public class CartController extends BaseController{
      * 2.移除购物车某个产品
      */
     @RequestMapping("delete_product.do")
-    public ServerResponse delete_product(HttpServletRequest httpServletRequest,String productIds){
-        User user = getCurrentUser(httpServletRequest);
+    public ServerResponse delete_product(HttpServletRequest httpServletRequest,@RequestParam("productId") String productId){
+        User user = getUser(httpServletRequest);
 
-        return cartService.delete(user.getId(),productIds);
+        return cartService.delete(user.getId(),productId);
     }
 
     /**
@@ -52,59 +65,31 @@ public class CartController extends BaseController{
      */
     @RequestMapping("list.do")
     public ServerResponse list(HttpServletRequest httpServletRequest){
-        User user = getCurrentUser(httpServletRequest);
+        User user = getUser(httpServletRequest);
         return cartService.list(user.getId());
     }
 
 
-//    /**
-//     * 5.购物车全选
-//     */
-//    @RequestMapping("select_all.do")
-//    public ServerResponse select_all(HttpServletRequest httpServletRequest){
-//        User user = getCurrentUser(httpServletRequest);
-//
-//        return cartService.selectOrUnSelect(user.getId(), Constants.Cart.CHECKED,null);
-//    }
-//
-//    /**
-//     * 6.购物车全不选
-//     */
-//    @RequestMapping("un_select_all.do")
-//    public ServerResponse un_select_all(HttpServletRequest httpServletRequest){
-//        User user = getCurrentUser(httpServletRequest);
-//
-//        return cartService.selectOrUnSelect(user.getId(),Constants.Cart.UN_CHECKED,null);
-//    }
-
     /**
-     * 7.购物车选中某个商品
+     * 4.购物车选中某个商品
      */
     @RequestMapping("select.do")
     public ServerResponse select(HttpServletRequest httpServletRequest,Integer productId){
-        User user = getCurrentUser(httpServletRequest);
+        User user = getUser(httpServletRequest);
         return cartService.selectOrUnSelect(user.getId(),Constants.Cart.CHECKED,productId);
     }
 
     /**
-     * 8.购物车取消选中某个商品
+     * 5.购物车取消选中某个商品
      */
     @RequestMapping("un_select.do")
     public ServerResponse un_select(HttpServletRequest httpServletRequest,Integer productId){
-        User user = getCurrentUser(httpServletRequest);
+        User user = getUser(httpServletRequest);
 
         return cartService.selectOrUnSelect(user.getId(),Constants.Cart.UN_CHECKED,productId);
     }
 
 
-    /**
-     * 9.查询在购物车里的产品种类数
-     */
-    @RequestMapping("get_cart_product_count.do")
-    public ServerResponse<Integer> get_cart_product_count(HttpServletRequest httpServletRequest){
-        User user = getCurrentUser(httpServletRequest);
-        return cartService.get_cart_product_count(user.getId());
-    }
 
 
     /**
@@ -112,7 +97,7 @@ public class CartController extends BaseController{
      */
     @RequestMapping("getCartList.do")
     public ServerResponse getCartList(@RequestParam("userId") String userId){
-        return cartService.list(Integer.valueOf(userId));
+        return cartService.getCartVo(Integer.valueOf(userId));
     }
 
     /**
@@ -122,7 +107,5 @@ public class CartController extends BaseController{
     public ServerResponse removeCart(@RequestParam("userId") String userId){
         return cartService.removeCart(userId);
     }
-
-
 
 }

@@ -152,33 +152,8 @@ public class Constants {
         String STOCK_IS_NOT_ENOUGH = "STOCK_IS_NOT_ENOUGH";
     }
 
-    public static final String CART_EXCHANGE="cart_exchange";
+    public static final String CART_EXCHANGE="cart-exchange";
+    public static final String PRODUCT_EXCHANGE="product-exchange";
+    public static final String ORDER_EXCHANGE="order-exchange";
 
-    public enum  QueueNameAndBindingEnum{
-        UPDATE_CART("cart-queue-update","update");
-
-        private String queueName;
-        private String routingKey;
-
-        QueueNameAndBindingEnum(String queueName, String routingKey) {
-            this.queueName = queueName;
-            this.routingKey = routingKey;
-        }
-
-        public String getQueueName() {
-            return queueName;
-        }
-
-        public void setQueueName(String queueName) {
-            this.queueName = queueName;
-        }
-
-        public String getRoutingKey() {
-            return routingKey;
-        }
-
-        public void setRoutingKey(String routingKey) {
-            this.routingKey = routingKey;
-        }
-    }
 }

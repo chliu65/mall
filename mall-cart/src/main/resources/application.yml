@@ -7,14 +7,14 @@ eureka:
       defaultZone: http://120.77.241.51:8762/eureka
   instance:
     prefer-ip-address: true
-    ip-address: 10.69.182.198
+    ip-address: 10.69.161.154 #49.123.79.89 #10.69.182.198
     instance-id: ${spring.cloud.client.ip-address}:${spring.application.name}:${server.port}
 spring:
   application:
     name: mall-cart
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mysql://10.69.182.198:3306/mall?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://10.69.161.154:3306/mall?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false&serverTimezone=Asia/Shanghai
     username: root
     password: 123456
   redis:
@@ -34,6 +34,13 @@ spring:
     port: 5672
     username: guest
     password: guest
+    listener:
+      simple:
+        acknowledge-mode: manual
+    template:
+      mandatory: true
+    publisher-confirms: true
+    publisher-returns: true
 mybatis:
   mapper-locations: classpath:com/lc/mallcart/dao/*.xml
   type-aliases-package: classpath:com.lc.mallcart.entity
