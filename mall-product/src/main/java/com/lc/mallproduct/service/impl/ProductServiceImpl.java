@@ -316,6 +316,7 @@ public class ProductServiceImpl implements ProductService {
             int result=productMapper.reduceStock(stockReduceVo);
             //更新库存失败，库存不足
             if (result==0){
+                log.info("商品{}库存异常，不足", stockReduceVo.getProductId());
                 throw new GlobalException(ResponseEnum.STOCK_IS_NOT_ENOUGH);
 
             }

@@ -4,7 +4,11 @@ package com.lc.mallproduct.controller;
 import com.lc.mallproduct.common.resp.ServerResponse;
 import com.lc.mallproduct.service.ProductService;
 import com.lc.mallproduct.vo.StockReduceVo;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -15,12 +19,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/product/")
-public class ProductController {
+@Slf4j
+public class ProductController implements InitializingBean {
     @Autowired
     private ProductService productService;
 
     /**
-     * 查询商品所有信息
+     * 查询商品全部信息(访问量小，不会缓存到redis)
      * @param productId
      * @return
      */
@@ -40,7 +45,7 @@ public class ProductController {
     }
 
     /**
-     * 查询商品静态信息，会存入redis中
+     * 到数据库查询商品静态信息，查询后缓存到redis中
      * @param productId
      * @return
      */
@@ -56,19 +61,14 @@ public class ProductController {
      */
     @RequestMapping("reduceStock.do")
     public ServerResponse reduceStock(@RequestBody List<StockReduceVo> stockReduceVoList){
+        log.info(stockReduceVoList.toString() );
         return productService.reduceStock(stockReduceVoList);
     }
 
-    /**
-     * 预置商品静态信息与库存到redis中
-     */
-    @RequestMapping("preInitProductStcokToRedis.do")
-    public ServerResponse preInitProductStcokToRedis(){
-        return productService.preInitProductInfoAndStcokToRedis();
+    //初始化预存商品静态信息和商品库存到redis
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        log.info("初始化商品信息");
+        productService.preInitProductInfoAndStcokToRedis();
     }
-
-
-
-
-
 }
