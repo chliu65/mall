@@ -31,7 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-@RequestMapping("user")
+//@RequestMapping("/user")
 @RestController
 @Slf4j
 // 表示标识这个类是swagger的资源
@@ -67,10 +67,10 @@ public class UserController {
         log.info("【用户{}开始登陆】",username);
         //1.读redis
         String token=CookieUtil.readLoginToken(request);
-        if(StringUtils.isBlank(token)){
+        if(!StringUtils.isBlank(token)){
             String userKey=new UserKey(token).getPrefix();
             String userString=stringRedisTemplate.opsForValue().get(userKey);
-            if (StringUtils.isBlank(userString)){
+            if (!StringUtils.isBlank(userString)){
                 User user=JsonUtil.Str2Obj(userString,User.class );
                 return user.getPassword().equals(MD5Util.MD5EncodeUtf8(password))?
                         ServerResponse.createBySuccess():ServerResponse.createByError(ResponseEnum.PASSWORD_WRONG);
