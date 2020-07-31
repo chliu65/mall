@@ -4,6 +4,7 @@ package com.lc.mallorder.service;
 import com.github.pagehelper.PageInfo;
 import com.lc.mallorder.common.resp.ServerResponse;
 import com.lc.mallorder.vo.MessageVo;
+import com.lc.mallorder.vo.OrderUserCartVo;
 import com.lc.mallorder.vo.OrderVo;
 
 import java.util.List;
@@ -54,20 +55,19 @@ public interface OrderService {
 
     /**
      * 扣减库存(redis预减库存)、下订单*
-     * @param result
+     * @param orderUserCartVo
      * @return
      */
-    ServerResponse stockAndOrderprocess(MessageVo result);
+    ServerResponse stockAndOrderprocess(OrderUserCartVo orderUserCartVo);
 
 //    ServerResponse pay(Integer id, Long orderNo, String path);
 
     /**
-     * 主动查询订单支付结果
-     * @param id
+     * 查询订单状态
      * @param orderNo
      * @return
      */
-    ServerResponse query_order_pay_status(Integer id, Long orderNo);
+    ServerResponse queryOrderStatus(Long orderNo);
 
     /**
      * 支付成功，完成下单，数据库扣库存
@@ -75,6 +75,16 @@ public interface OrderService {
      * @return
      */
     ServerResponse finishOrder(String orderNo);
+
+    /**
+     * 用户再次请求支付订单
+     * @param id
+     * @param orderNo
+     * @return
+     */
+
+    ServerResponse requestPayment(Integer id, Long orderNo);
+
 
 
 //    ServerResponse aliCallback(Map<String, String> params);

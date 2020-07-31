@@ -4,10 +4,10 @@ import lombok.Data;
 
 @Data
 public class StockReduceVo {
-    Integer productId;
-    Integer reduceNum;
+    String productId;
+    String reduceNum;
 
-    public StockReduceVo(Integer productId, Integer reduceNum) {
+    public StockReduceVo(String productId, String reduceNum) {
         this.productId = productId;
         this.reduceNum= reduceNum;
     }

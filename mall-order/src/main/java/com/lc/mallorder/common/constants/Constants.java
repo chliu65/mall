@@ -61,6 +61,13 @@ public class Constants {
     public interface ProductListOrderBy{
         Set<String> PRICE_ASC_DESC = Sets.newHashSet("price_desc","price_asc");
     }
+    public interface Cart{
+        int CHECKED = 1;//即购物车选中状态
+        int UN_CHECKED = 0;//购物车中未选中状态
+
+        String STOCK_IS_ENOUGH = "STOCK_IS_ENOUGH ";
+        String STOCK_IS_NOT_ENOUGH = "STOCK_IS_NOT_ENOUGH";
+    }
     public interface OrderKeyPrefix{
         static final String ORDER_DETAIL_KEY="ORDER_DETAIL_KEY";
         static final String ORDER_STATUS_KEY="ORDER_STATUS_KEY";
@@ -68,18 +75,19 @@ public class Constants {
     public enum OrderStatusEnum{
         CANCELED(0,"已取消"),
         NO_PAY(10,"未支付"),
-        PAID(20,"已付款"),
+        PAYING(20,"正在支付"),
+        PAID(30,"已付款"),
         SHIPPED(40,"已发货"),
         ORDER_SUCCESS(50,"订单完成"),
         ORDER_CLOSE(60,"订单关闭");
 
 
-        OrderStatusEnum(int code,String value){
+        OrderStatusEnum(Integer code,String value){
             this.code = code;
             this.value = value;
         }
         private String value;
-        private int code;
+        private Integer code;
 
         public String getValue() {
             return value;
@@ -88,7 +96,7 @@ public class Constants {
         public int getCode() {
             return code;
         }
-        public static OrderStatusEnum codeOf(int code){
+        public static OrderStatusEnum codeOf(Integer code){
             for(OrderStatusEnum orderStatusEnum : values()){
                 if(orderStatusEnum.getCode() == code){
                     return orderStatusEnum;

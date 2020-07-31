@@ -8,5 +8,5 @@ public class OrderUserCartVo {
     private Integer userId;
     private Integer shippingId;
     private CartVo cartVo;
-    private long orderNo;
+    private Long orderNo;
 }

@@ -55,6 +55,10 @@ public class Timer {
         }
     }
 
+    public void deleteTask(TimerTask timerTask){
+        delayQueue.remove(timerTask);
+    }
+
     /**
      * 获取过期任务
      */

@@ -1,11 +1,14 @@
 package com.lc.mallorder.message;
 
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.lc.mallorder.common.constants.Constants;
 import com.lc.mallorder.common.timer.Timer;
 import com.lc.mallorder.common.utils.JsonUtil;
 import com.lc.mallorder.common.utils.RedisUtils;
 import com.lc.mallorder.service.OrderService;
 import com.lc.mallorder.vo.MessageVo;
+import com.lc.mallorder.vo.OrderUserCartVo;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.amqp.rabbit.annotation.Exchange;
@@ -14,6 +17,7 @@ import org.springframework.amqp.rabbit.annotation.QueueBinding;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
 
@@ -22,29 +26,29 @@ import org.springframework.stereotype.Component;
 public class MessageReceiver {
     @Autowired
     private OrderService orderService;
-    @Autowired
-    private Timer timer;
-    @Autowired
-    private StringRedisTemplate stringRedisTemplate;
-    @Autowired
-    private RedisUtils redisUtils;
     @RabbitListener(bindings = @QueueBinding(
             value = @Queue("order-queue"),
-            exchange = @Exchange("order-exchange")
+            exchange = @Exchange("order-exchange"),
+            key = "order.*"
     ))
     public void proess(String message){
         log.info("接收到的消息为:{}",message);
-        MessageVo result = JsonUtil.Str2Obj(message, MessageVo.class);
-        log.info("【MQ解析数据,前者为userId,后者为product信息：{}】",result);
-        //扣减库存、下订单
-        //是先扣减库存，扣减成功才可以下订单，但是这是两个数据库，那么属于跨库的事务，所以如何解决呢？
-        //一种方案是：利用消息队列，订单服务订阅扣减库存服务，一旦发现数据库的库存扣减成功，就去扣减插入订单；
-        //如果库存扣减不成功，那么订单也不会写入
-        orderService.stockAndOrderprocess(result);
-        //模拟未支付，设置订单超时检查任务
-//        OrderDelayHandlerTask orderDelayHandlerTask=new OrderDelayHandlerTask(result.getOrderNo(),redisUtils);
-//        TimerTask timerTask=new TimerTask(Constants.ORDER_LOCKERD_TIME,orderDelayHandlerTask);
-//        timer.addTask(timerTask);
+        MessageVo messageVo = JsonUtil.Str2Obj(message, new TypeReference<MessageVo<Object>>(){} );
+        log.info("【MQ解析数据,前者为userId,后者为product信息：{}】",messageVo);
+        String orderUserCartVoStr=JsonUtil.obj2String(messageVo.getData());
+        OrderUserCartVo orderUserCartVo=JsonUtil.Str2Obj(orderUserCartVoStr,OrderUserCartVo.class );
+        //数据库购物车选中项清空，生成未支付订单存入数据库
+        orderService.stockAndOrderprocess(orderUserCartVo);
+    }
+
+    @RabbitListener(bindings = @QueueBinding(
+            value = @Queue("order-queue"),
+            exchange = @Exchange("order-exchange"),
+            key = "order.*"
+    ))
+    public void removeCart(@Payload String message){
+        log.info("接收到的消息为:{}",message);
+        MessageVo messageVo=(MessageVo) JsonUtil.Str2Obj(message,new TypeReference<MessageVo<Object>>() {} );
     }
 
 }

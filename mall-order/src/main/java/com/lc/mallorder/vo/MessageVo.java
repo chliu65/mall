@@ -1,12 +1,23 @@
 package com.lc.mallorder.vo;
 
-import lombok.Data;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
+
+/**
+ * 消息队列通用消息体
+ * @param <T>
+ */
 
 @Data
-public class MessageVo {
-    private Integer userId;
-    private Integer shippingId;
-    private CartVo cartVo;
-    private long orderNo;
+@NoArgsConstructor
+@AllArgsConstructor
+public class MessageVo<T> implements Serializable {
+    //操作指令
+    private String order;
+    //对应需要的数据
+    private T data;
 }
